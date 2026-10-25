@@ -5,6 +5,27 @@ export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api",
 });
 
+export type Gig = {
+  _id: string;
+  event: {
+    eventName: string;
+    eventType: string;
+    startDate: string;
+    endDate?: string;
+    city: string;
+    venue?: string;
+  };
+  budget: { min: number; max: number };
+  additionalRequirements?: string;
+  postedOn: string;
+  [key: string]: unknown;
+};
+
+export async function getGigs(category: Category) {
+  const { data } = await api.get<Gig[]>(`/requirements/${slugs[category]}`);
+  return data;
+}
+
 const slugs: Record<Category, string> = {
   "Event Planner": "event-planner",
   Performer: "performer",

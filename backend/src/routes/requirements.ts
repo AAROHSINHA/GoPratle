@@ -37,7 +37,31 @@ const creators: Record<string, (b: Body) => Promise<{ id: string }>> = {
     }),
 };
 
+const open = { status: "open" } as const;
+
+const listers: Record<string, () => Promise<unknown[]>> = {
+  "event-planner": () =>
+    EventPlannerRequirement.find(open).sort({ postedOn: -1 }).limit(50).lean(),
+  performer: () => PerformerRequirement.find(open).sort({ postedOn: -1 }).limit(50).lean(),
+  crew: () => CrewRequirement.find(open).sort({ postedOn: -1 }).limit(50).lean(),
+};
+
 const router = Router();
+
+// GET /api/requirements/:category  -> open gigs, newest first
+router.get("/:category", async (req, res) => {
+  const list = listers[req.params.category];
+  if (!list) {
+    return res.status(404).json({ message: "Unknown category" });
+  }
+
+  try {
+    res.json(await list());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
 
 // POST /api/requirements/:category  (event-planner | performer | crew)
 router.post("/:category", async (req, res) => {
