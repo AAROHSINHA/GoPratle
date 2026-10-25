@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { errorMessage, saveEvent } from "@/lib/api";
 import { basicsFields, categoryFields, displayValue, type FieldDef } from "./config";
 import { useEventForm } from "./EventFormContext";
 
@@ -33,13 +35,50 @@ function Section({
 }
 
 export default function StepPreview() {
-  const { category, values, setStep } = useEventForm();
+  const { category, values, setStep, reset } = useEventForm();
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
   if (!category) return null;
+
+  const onSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      await saveEvent(category, values);
+      setSaved(true);
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (saved) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-10 text-center">
+        <h2 className="text-2xl font-bold tracking-tight">Event saved 🎉</h2>
+        <p className="font-medium text-zinc-500">Your requirement has been posted.</p>
+        <button
+          type="button"
+          onClick={reset}
+          className="rounded-full bg-[#FF4C18] px-8 py-2.5 font-semibold text-white shadow-lg shadow-[#FF4C18]/30 transition hover:-translate-y-0.5 hover:bg-[#E63E0F] hover:shadow-xl hover:cursor-pointer active:scale-95"
+        >
+          Add another event
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <Section title="Event Basics" fields={basicsFields} values={values} />
       <Section title={category} fields={categoryFields[category]} values={values} />
+      {error && (
+        <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {error}
+        </p>
+      )}
       <div className="flex justify-between">
         <button
           type="button"
@@ -50,10 +89,11 @@ export default function StepPreview() {
         </button>
         <button
           type="button"
-          onClick={() => alert("saved")}
-          className="rounded-full bg-[#FF4C18] px-8 py-2.5 font-semibold text-white shadow-lg shadow-[#FF4C18]/30 transition hover:-translate-y-0.5 hover:bg-[#E63E0F] hover:shadow-xl hover:cursor-pointer active:scale-95"
+          onClick={onSave}
+          disabled={saving}
+          className="rounded-full bg-[#FF4C18] px-8 py-2.5 font-semibold text-white shadow-lg shadow-[#FF4C18]/30 transition hover:-translate-y-0.5 hover:bg-[#E63E0F] hover:shadow-xl hover:cursor-pointer active:scale-95 disabled:pointer-events-none disabled:opacity-60"
         >
-          Save Event
+          {saving ? "Saving…" : "Save Event"}
         </button>
       </div>
     </div>

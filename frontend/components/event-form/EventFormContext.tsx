@@ -12,6 +12,7 @@ type EventFormState = {
   setCategory: (category: Category) => void;
   values: Record<string, string>;
   setValue: (name: string, value: string) => void;
+  reset: () => void;
 };
 
 const EventFormContext = createContext<EventFormState | null>(null);
@@ -24,9 +25,15 @@ export function EventFormProvider({ children }: { children: ReactNode }) {
   const setValue = (name: string, value: string) =>
     setValues((prev) => ({ ...prev, [name]: value }));
 
+  const reset = () => {
+    setStep(1);
+    setCategory(null);
+    setValues({});
+  };
+
   return (
     <EventFormContext.Provider
-      value={{ step, setStep, category, setCategory, values, setValue }}
+      value={{ step, setStep, category, setCategory, values, setValue, reset }}
     >
       {children}
     </EventFormContext.Provider>
