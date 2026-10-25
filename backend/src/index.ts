@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import dns from "node:dns";
+import requirementsRouter from "./routes/requirements";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 dotenv.config();
@@ -17,6 +18,8 @@ app.use(express.json());
 app.get("/api/health", (_req, res) => {
   res.json({ message: "GoPratle API is running" });
 });
+
+app.use("/api/requirements", requirementsRouter);
 
 // Start server
 async function startServer() {
